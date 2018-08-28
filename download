@@ -1,0 +1,9 @@
+#!/bin/bash
+
+file=~/downloads/$1
+if [ -f $file -o -d $file ];
+then
+    cp -r $file .
+else
+    echo "$file not exist!"
+fi

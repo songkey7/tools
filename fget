@@ -1,0 +1,44 @@
+#!/usr/bin/expect
+
+if {$argc < 2} {
+    send_user "usage: $argv0 src_file \[0-3\]\n"
+    exit
+}
+
+set timeout -1
+set jump_host user@localhost
+set jump_path /home/qsong/downloads
+
+set src_file [lindex $argv 0]
+set host [lindex $argv 1]
+
+if {[file exists $src_file]} {
+    send_user "$src_file exists\n"
+    exit
+}
+
+if { $host == "0" } {
+    set host user1@host1
+    set path /home/user/downloads
+}
+
+set path $path/$src_file
+set b [string last "/" $src_file]
+if {$b > 0} {
+    set path [lindex $argv 0]
+}
+
+spawn ssh -t $jump_host
+expect "$" { send "scp -r $host:$path ${jump_path}\r" }
+
+expect "100%"
+
+set src_file [string trimright $path "/"]
+set src_file [string range $src_file [string last "/" $src_file ] [string length $src_file]]
+
+spawn scp -r $jump_host:$jump_path/$src_file .
+expect "100%"
+
+send "exit\r"
+expect eof
+

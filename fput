@@ -1,0 +1,35 @@
+#!/usr/bin/expect
+
+if {$argc < 2} {
+    send_user "usage: $argv0 src_file \[0-3\]\n"
+    exit
+}
+
+set timeout -1
+set jump_host user@localhost
+set jump_path /home/user/downloads
+
+set src_file [lindex $argv 0]
+set host [lindex $argv 1]
+
+if { $host == "0" } {
+    set host user1@host1
+    set path /home/user/downloads
+}
+
+spawn scp -r $src_file $jump_host:$jump_path
+
+expect eof
+
+set src_file [string trimright $src_file "/"]
+set src_file [string range $src_file [string last "/" $src_file ] [string length $src_file]]
+
+spawn ssh -t $jump_host
+
+expect "$" { send "scp -r ~/downloads/$src_file $host:$path\r" }
+
+expect "$"
+
+send "exit\r"
+expect eof
+
